@@ -26,9 +26,8 @@ class Article(db.Model):
 @app.route('/api/article', methods = ['GET', 'POST'])
 def handle_create_read():
     if request.method == 'GET':
-        if request.data:
-            data = request.json
-            if year := data.get("year_of_release", None):
+        if request.args:
+            if year := request.args.to_dict().get("year", None):
                 articles = Article.query.filter(Article.created_at.between(f'{year}-01-01', f'{year}-12-31')).all()
                 return {"articles": [article.as_dict() for article in articles]}, 200
             else:
@@ -61,7 +60,7 @@ def handle_create_read():
         else:
             return {"info": "no data provided"}, 400
 
-@app.route('/api/article/<int:id>/', methods=["DELETE", "PUT"])
+@app.route('/api/article/<int:id>', methods=["DELETE", "PUT"])
 def handle_update_delete(id):
     if request.method == "PUT":
         if article := Article.query.filter_by(id=id).first():
