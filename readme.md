@@ -1,5 +1,6 @@
 # Lokey recruitment task
 
+This branch contains my first solution where I've done my own API, because I didn't read the statement to use existing API.
 This repo contains my solution for recruitment task at Lokey.
 
 ## Task requirements:
