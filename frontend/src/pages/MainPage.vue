@@ -5,7 +5,7 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <q-btn class="q-mr-sm" dense round color="blue" @click="editArticle(props)" icon="edit"></q-btn>
-          <q-btn dense round color="red" @click="() => {showDeleteDialog = true; articleToDelete = props.row.id}" icon="delete"></q-btn>
+          <q-btn dense round color="red" @click="() => {showDeleteDialog = true; articleToDelete = props.row.article_id}" icon="delete"></q-btn>
         </q-td>          
       </template>
     </q-table>
@@ -91,10 +91,10 @@
 import axios from 'axios';
 import { defineComponent, onMounted, ref } from 'vue';
 import { date } from 'quasar';
-import YearPicker from 'src/components/YearPicker.vue';
+import YearPicker from '../components/YearPicker.vue';
 
 export interface Article {
-  'id': number;
+  'article_id': number;
   'title': string;
   'content': string;
   'created_at': string;
@@ -116,6 +116,7 @@ type GetArticleResponse = {
 }
 
 axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*'
+axios.defaults.headers.common['Authorization'] = JSON.parse(localStorage.getItem('userStoreState')).authorization
 axios.defaults.headers.post['Content-Type'] = 'application/json'
 axios.defaults.headers.put['Content-Type'] = 'application/json'
 axios.defaults.headers.delete['Content-Type'] = 'application/json'
@@ -131,7 +132,7 @@ export default defineComponent({
       created_at: date.formatDate(new Date(), 'YYYY/MM/DD')
     })
     const articleToEdit = ref<Article>({
-      id: 0,
+      article_id: 0,
       title: '',
       content: '',
       created_at: ''
@@ -181,10 +182,10 @@ export default defineComponent({
 
     async function getArticles(alert?: boolean): Promise<string | Article[]> {
       try {
-        const {data, status} = await axios.get<GetArticleResponse>(`${APIUrl}article`, showFilter.value ? { params: { year: filterYear.value } } : {})
+        const {data, status} = await axios.get<Article[]>(`${APIUrl}articles`, showFilter.value ? { params: { year: filterYear.value } } : {})
         console.log(data)
         console.log('resposne status is: ', status)
-        rows.value = data.articles
+        rows.value = data
         if (alert){
           alertMsg.value = 'Successfully refreshed table'
           showAlert.value = true
@@ -212,12 +213,12 @@ export default defineComponent({
         created_at: new Date(newArticle.value.created_at).toUTCString()
       }
       try {
-        const {data, status} = await axios.post<Article>(`${APIUrl}article`, article)
+        const {data, status} = await axios.post<Article>(`${APIUrl}articles`, article)
         console.log(data)
         console.log('resposne status is: ', status)
         alertMsg.value = 'Successfully created new article'
         showAlert.value = true
-        newArticle.value = {title: "", content: "", created_at: date.formatDate(new Date(), 'YYYY/MM/DD')}
+        newArticle.value = {title: '', content: '', created_at: date.formatDate(new Date(), 'YYYY/MM/DD')}
         return data
       } catch (error) {
         if (axios.isAxiosError(error)) {
@@ -235,7 +236,7 @@ export default defineComponent({
     function editArticle(props: RowProps) {
       const formatedDate = date.formatDate(Date.parse(props.row.created_at), 'YYYY/MM/DD')
       articleToEdit.value = {
-        id: props.row.id,
+        article_id: props.row.article_id,
         title: props.row.title,
         content: props.row.content,
         created_at: formatedDate
@@ -251,7 +252,7 @@ export default defineComponent({
       }
       console.log(article)
       try {
-        const {data, status} = await axios.put<Article>(`${APIUrl}article/${articleToEdit.value.id}`, article)
+        const {data, status} = await axios.put<Article>(`${APIUrl}articles/${articleToEdit.value.article_id}`, article)
         console.log(data)
         console.log('response status is: ', status)
         alertMsg.value = 'Successfully updated article'
@@ -272,7 +273,7 @@ export default defineComponent({
 
     async function deleteArticle() {
       try {
-        const {data, status} = await axios.delete<string>(`${APIUrl}article/${articleToDelete.value}`)
+        const {data, status} = await axios.delete<string>(`${APIUrl}articles/${articleToDelete.value}`)
         console.log(data)
         console.log('response status is: ', status)
         alertMsg.value = 'Successfully deleted article'

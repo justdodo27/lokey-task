@@ -11,7 +11,7 @@ import { defineComponent, ref } from 'vue'
 
 export default defineComponent({
     props: {
-        'value': Number,
+        'value': {'type':Number, 'required': true},
         'show': Boolean
     },
     setup(props) {

@@ -1,6 +1,6 @@
-# Quasar App (frontend)
+# Quasar App (recruitment-task)
 
-Recruitment task
+A Quasar Project
 
 ## Install the dependencies
 ```bash

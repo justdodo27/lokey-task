@@ -1,3 +1,3 @@
-venv/
+local_dbs/*.db
 __pycache__/
-*.db
+venv/
